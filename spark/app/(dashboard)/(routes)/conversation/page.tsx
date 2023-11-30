@@ -1,20 +1,29 @@
 'use client';
 
+import axios from "axios";
 import * as z from "zod";
 import Heading from "@/components/heading";
 import { MessageSquare } from "lucide-react";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { formSchema } from "./constants";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
+import { ChatCompletionMessage } from "openai/resources/chat/index.mjs";
+
 
 
 
 export default function ConversationPage() {
+  const router = useRouter()
+  const [messages, setMessages] = useState<ChatCompletionMessage[]>([]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -27,7 +36,26 @@ export default function ConversationPage() {
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+    try {
+      const userMessage: ChatCompletionMessage = {
+        role: "assistant",
+        content: values.prompt,
+      } 
+      const newMessages = [...messages, userMessage]
+
+      const response = await axios.post('/api/conversation', {
+        messages: newMessages,
+      });
+
+      setMessages((current) => [...current, response.data])
+
+      form.reset()
+    } catch (error: any) {
+        // TODO: open pro Modal
+        console.log(error)
+    } finally {
+      router.refresh()
+    }
   }
 
   return (
@@ -69,7 +97,16 @@ export default function ConversationPage() {
 
           </Form >
           <div className="space-7-4 mt-4">
-            messages content
+            {messages.length === 0 && !isLoading && (
+              <Empty />
+            )}
+            <div className="flex flex-col-reverse gap-y-4">
+              {messages.map((message) => (
+                <div key={message.content}>
+                  {message.content}
+                </div>
+              ))}
+            </div>
           </div>
 
         </div>
