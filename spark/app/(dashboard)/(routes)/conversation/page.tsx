@@ -16,19 +16,21 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-import { ChatCompletionMessage } from "openai/resources/chat/index.mjs";
+// import { ChatCompletionMessage } from "openai/resources/chat/index.mjs";
 
 import Empty from "@/components/empty"
 import Loader from "@/components/loader"
 import UserAvatar from "@/components/user-avatar";
 import BotAvatar from "@/components/bot-avatar";
+import OpenAI from "openai";
+import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
 
 
 
 export default function ConversationPage() {
   const router = useRouter()
-  const [messages, setMessages] = useState<ChatCompletionMessage[]>([]);
+  const [messages, setMessages] = useState<OpenAI.Chat.ChatCompletionMessageParam[]>([]);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -43,7 +45,7 @@ export default function ConversationPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: ChatCompletionMessage = {
+      const userMessage: ChatCompletionMessageParam = {
         role: "user",
         content: values.prompt,
       } 
@@ -53,7 +55,7 @@ export default function ConversationPage() {
         messages: newMessages,
       });
 
-      setMessages((current) => [...current, response.data])
+      setMessages((current) => [...current, userMessage, response.data])
 
       form.reset()
     } catch (error: any) {
@@ -118,7 +120,7 @@ export default function ConversationPage() {
                 message.role === "user" ? 'bg-white border border-black/10' : 'bg-muted' 
                 )}
                 >
-                  {message.role === "user" ? <BotAvatar /> :  <UserAvatar />}
+                  {message.role === "user" ? <UserAvatar /> :  <BotAvatar />}
                   <p className='text-sm'>
                   {message.content}
 
