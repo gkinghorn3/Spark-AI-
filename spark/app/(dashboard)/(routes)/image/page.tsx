@@ -18,7 +18,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
-import OpenAI from "openai";
 // import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
 import Empty from "@/components/empty";
