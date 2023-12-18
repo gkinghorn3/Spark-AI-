@@ -1,5 +1,6 @@
 "use client";
 
+
 import { useRouter } from "next/navigation";
 
 import { ArrowRight, Code, ImageIcon, MessageSquare, Music, VideoIcon } from "lucide-react";
@@ -43,6 +44,8 @@ const tools = [
 ];
 
 export default function DashboardPage() {
+
+
 
   const router = useRouter();
 

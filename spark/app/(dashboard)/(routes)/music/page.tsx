@@ -8,7 +8,7 @@ import { Music } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { cn } from "@/lib/utils";
+
 
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { formSchema } from "./constants";
@@ -20,17 +20,13 @@ import { useState } from "react";
 
 import Empty from "@/components/empty"
 import Loader from "@/components/loader"
-import UserAvatar from "@/components/user-avatar";
-import BotAvatar from "@/components/bot-avatar";
-import OpenAI from "openai";
-import { ChatCompletionMessageParam } from "openai/resources/index.mjs";
 
 
 
 
 export default function MusicPage() {
   const router = useRouter()
-  const [messages, setMessages] = useState<OpenAI.Chat.ChatCompletionMessageParam[]>([]);
+  const [music, setMusic] = useState<string>();
 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -45,18 +41,11 @@ export default function MusicPage() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const userMessage: ChatCompletionMessageParam = {
-        role: "user",
-        content: values.prompt,
-      } 
-      const newMessages = [...messages, userMessage]
+      setMusic(undefined)
 
-      const response = await axios.post('/api/conversation', {
-        messages: newMessages,
-      });
+      const response = await axios.post('/api/music', values) 
 
-      setMessages((current) => [...current, userMessage, response.data])
-
+      setMusic(response.data.audio)
       form.reset()
     } catch (error: any) {
         // TODO: open pro Modal
@@ -110,12 +99,14 @@ export default function MusicPage() {
                   <Loader />
               </div>
             )}
-            {messages.length === 0 && !isLoading && (
-              <Empty label="no conversation started" />
+            {!music && !isLoading && (
+              <Empty label="No music generated" />
             )}
-            <div>
-              Music will be generated here
-            </div>
+            {music && (
+              <audio controls className='w-full mt-8'>
+                <source src={music} />  
+              </audio>
+            )}
           </div>
 
         </div>
